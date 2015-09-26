@@ -3,18 +3,18 @@
 
 #include <defs.h>
 
-#define ELF_MAGIC    0x464C457FU            // "\x7FELF" in little endian
+#define ELF_MAGIC    0x464C457FU            // "\x7FELF" 小端法
 
-/* file header */
+/* 文件头 */
 struct elfhdr {
-    uint32_t e_magic;     // must equal ELF_MAGIC
+    uint32_t e_magic;     // 必须等于ELF_MAGIC
     uint8_t e_elf[12];
     uint16_t e_type;      // 1=relocatable, 2=executable, 3=shared object, 4=core image
     uint16_t e_machine;   // 3=x86, 4=68K, etc.
     uint32_t e_version;   // file version, always 1
     uint32_t e_entry;     // entry point if executable
-    uint32_t e_phoff;     // file position of program header or 0
-    uint32_t e_shoff;     // file position of section header or 0
+    uint32_t e_phoff;     // file position of program header or 0  程序头的文件位置
+    uint32_t e_shoff;     // file position of section header or 0  段头的文件位置
     uint32_t e_flags;     // architecture-specific flags, usually 0
     uint16_t e_ehsize;    // size of this elf header
     uint16_t e_phentsize; // size of an entry in program header

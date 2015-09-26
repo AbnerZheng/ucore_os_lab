@@ -7,17 +7,17 @@
  * an ELF kernel image from the first IDE hard disk.
  *
  * DISK LAYOUT
- *  * This program(bootasm.S and bootmain.c) is the bootloader.  bootloader由bootasm.S和bootmain.c两个文件组成
- *    It should be stored in the first sector of the disk.  bootloader应该放在disk中第一个扇区
+ *  * bootloader由bootasm.S和bootmain.c两个文件组成
+ *    bootloader应该放在disk中第一个扇区
  *
- *  * The 2nd sector onward holds the kernel image.  第二个扇区放置内核镜像
+ *  * 第二个扇区放置内核镜像
  *
- *  * The kernel image must be in ELF format.  内核镜像必须为ELF格式
+ *  * 内核镜像必须为ELF格式
  *
  *  启动步骤
  *  * 当cpu启动的时候， 载入BIOS到内存，之后执行它
  *
- *  * BIOS初始化设备，设置中断例行程序，并且读入启动设备（比如硬盘）的第一个扇区到内存，并且跳转到该程序
+ *  * BIOS初始化设备，设置中断例行程序，并且读入启动设备（比如硬盘）的第一个扇区到内存，然后跳转到该程序
  *
  *  * 假设该boot loader放置在硬盘的第一个扇区，该代码接管一切
  *
@@ -27,7 +27,7 @@
  * */
 
 #define SECTSIZE        512   // 每个扇区为512个字节
-#define ELFHDR          ((struct elfhdr *)0x10000)      // scratch space
+#define ELFHDR          ((struct elfhdr *)0x10000)      // 暂存接口
 
 /*
  * waitdisk - 等待硬盘准备好
@@ -63,17 +63,16 @@ readsect(void *dst, uint32_t secno) {
     outb(0x1F6, ((secno >> 24) & 0xF) | 0xE0);  // 写入25-32位，其中，25-28为扇区号码， 29位为0，30-32为1.
     outb(0x1F7, 0x20);                      // cmd 0x20 - 读取扇区
 
-    // wait for disk to be ready
-    // 阻塞等待
+    // 阻塞等待硬盘就绪
     waitdisk();
 
-    // read a sector
-    insl(0x1F0, dst, SECTSIZE / 4);
+    // 读入一个扇区
+    insl(0x1F0, dst, SECTSIZE / 4); //只读64字节
 }
 
 /* *
- * readseg - read @count bytes at @offset from kernel into virtual address @va,
- * might copy more than asked.
+ * readseq - 从内核中的@offset偏移处读入@count个字节，读入到虚拟地址@va
+ * 会读入比要求的更多些
  * */
 static void
 readseg(uintptr_t va, uint32_t count, uint32_t offset) {
@@ -93,13 +92,13 @@ readseg(uintptr_t va, uint32_t count, uint32_t offset) {
     }
 }
 
-/* bootmain - the entry of bootloader */
+/* bootmain - bootloader 的入口函数 */
 void
 bootmain(void) {
-    // read the 1st page off disk
+    // 读取disk的第一页, 一页为8个扇区
     readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
 
-    // is this a valid ELF?
+    // 检测该ELF是否合法
     if (ELFHDR->e_magic != ELF_MAGIC) {
         goto bad;
     }
@@ -115,6 +114,7 @@ bootmain(void) {
 
     // call the entry point from the ELF header
     // note: does not return
+    // 从ELF的
     ((void (*)(void))(ELFHDR->e_entry & 0xFFFFFF))();
 
 bad:
