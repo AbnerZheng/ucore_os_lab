@@ -5,29 +5,29 @@
 
 /* Trap Numbers */
 
-/* Processor-defined: */
+// 处理器定义的一些trap
 #define T_DIVIDE                0    // divide error
 #define T_DEBUG                    1    // debug exception
 #define T_NMI                    2    // non-maskable interrupt
 #define T_BRKPT                    3    // breakpoint
 #define T_OFLOW                    4    // overflow
 #define T_BOUND                    5    // bounds check
-#define T_ILLOP                    6    // illegal opcode
-#define T_DEVICE                7    // device not available
+#define T_ILLOP                    6    // illegal opcode 非法操作码
+#define T_DEVICE                7    // device not available  设备不可用
 #define T_DBLFLT                8    // double fault
 // #define T_COPROC                9    // reserved (not used since 486)
 #define T_TSS                    10    // invalid task switch segment
 #define T_SEGNP                    11    // segment not present
 #define T_STACK                    12    // stack exception
 #define T_GPFLT                    13    // general protection fault
-#define T_PGFLT                    14    // page fault
+#define T_PGFLT                    14    // 页错误
 // #define T_RES                15    // reserved
 #define T_FPERR                    16    // floating point error
-#define T_ALIGN                    17    // aligment check
-#define T_MCHK                    18    // machine check
+#define T_ALIGN                    17    // aligment check 对齐检查
+#define T_MCHK                    18    // machine check  机器检查
 #define T_SIMDERR                19    // SIMD floating point error
 
-#define T_SYSCALL               0x80 // SYSCALL, ONLY FOR THIS PROJ
+#define T_SYSCALL               0x80 // SYSCALL, ONLY FOR THIS PROJ 系统调用，只针对该工程
 
 /* Hardware IRQ numbers. We receive these as (IRQ_OFFSET + IRQ_xx) */
 #define IRQ_OFFSET                32    // IRQ 0 corresponds to int IRQ_OFFSET
@@ -47,7 +47,7 @@
 #define T_SWITCH_TOU                120    // user/kernel switch
 #define T_SWITCH_TOK                121    // user/kernel switch
 
-/* registers as pushed by pushal */
+// pushal函数压栈的寄存器
 struct pushregs {
     uint32_t reg_edi;
     uint32_t reg_esi;

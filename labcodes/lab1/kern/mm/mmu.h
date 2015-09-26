@@ -46,7 +46,7 @@
 #define STS_IG32        0xE            // 32-bit Interrupt Gate
 #define STS_TG32        0xF            // 32-bit Trap Gate
 
-/* Gate descriptors for interrupts and traps */
+// 中断和陷阱的描述
 struct gatedesc {
     unsigned gd_off_15_0 : 16;        // low 16 bits of offset in segment
     unsigned gd_ss : 16;            // segment selector

@@ -11,7 +11,7 @@
 #include <string.h>
 #define TICK_NUM 100
 
-static void print_ticks() {
+static void print_ticks() { //打印ticks
     cprintf("%d ticks\n",TICK_NUM);
 #ifdef DEBUG_GRADE
     cprintf("End of Test.\n");
@@ -20,7 +20,7 @@ static void print_ticks() {
 }
 
 /* *
- * Interrupt descriptor table:
+ * 中断描述表
  *
  * Must be built at run time because shifted function addresses can't
  * be represented in relocation records.

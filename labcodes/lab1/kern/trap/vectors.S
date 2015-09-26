@@ -1274,7 +1274,7 @@ vector255:
   pushl $255
   jmp __alltraps
 
-# vector table
+# 向量表
 .data
 .globl __vectors
 __vectors:

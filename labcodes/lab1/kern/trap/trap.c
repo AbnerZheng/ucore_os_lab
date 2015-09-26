@@ -20,7 +20,7 @@ static void print_ticks() {
 }
 
 /* *
- * Interrupt descriptor table:
+ * 中断描述表
  *
  * Must be built at run time because shifted function addresses can't
  * be represented in relocation records.
@@ -31,7 +31,7 @@ static struct pseudodesc idt_pd = {
     sizeof(idt) - 1, (uintptr_t)idt
 };
 
-/* idt_init - initialize IDT to each of the entry points in kern/trap/vectors.S */
+// idt_init - 初始化ID以对应kern/trap/vector.S里每一项的入口
 void
 idt_init(void) {
      /* LAB1 YOUR CODE : STEP 2 */
@@ -46,6 +46,16 @@ idt_init(void) {
       *     You don't know the meaning of this instruction? just google it! and check the libs/x86.h to know more.
       *     Notice: the argument of lidt is idt_pd. try to find it!
       */
+
+    extern uintptr_t __vectors[];
+    int i;
+    for(i = 0; i< sizeof(idt)/ sizeof(struct gatedesc); i++){
+        SETGATE(idt[i], 0, GD_KTEXT , __vectors[i], DPL_KERNEL);
+    }
+
+    SETGATE(idt[T_SYSCALL], 0, GD_KTEXT, __vectors[T_SYSCALL], DPL_USER);
+
+    lidt(&idt_pd);
 }
 
 static const char *
@@ -122,6 +132,7 @@ print_trapframe(struct trapframe *tf) {
     }
 }
 
+// 打印寄存器
 void
 print_regs(struct pushregs *regs) {
     cprintf("  edi  0x%08x\n", regs->reg_edi);
@@ -135,6 +146,7 @@ print_regs(struct pushregs *regs) {
 }
 
 /* trap_dispatch - dispatch based on what type of trap occurred */
+// trap分配 - 依据trap类别分配
 static void
 trap_dispatch(struct trapframe *tf) {
     char c;
@@ -147,6 +159,9 @@ trap_dispatch(struct trapframe *tf) {
          * (2) Every TICK_NUM cycle, you can print some info using a funciton, such as print_ticks().
          * (3) Too Simple? Yes, I think so!
          */
+        ++ticks;
+        if(ticks % TICK_NUM == 0)
+            print_ticks();
         break;
     case IRQ_OFFSET + IRQ_COM1:
         c = cons_getc();
