@@ -5,21 +5,21 @@
 #include <string.h>
 #include <kdebug.h>
 
-#define STACKFRAME_DEPTH 20
+#define STACKFRAME_DEPTH 20  //定义栈深度为20
 
 extern const struct stab __STAB_BEGIN__[];  // beginning of stabs table
 extern const struct stab __STAB_END__[];    // end of stabs table
 extern const char __STABSTR_BEGIN__[];      // beginning of string table
 extern const char __STABSTR_END__[];        // end of string table
 
-/* debug information about a particular instruction pointer */
+// 一个特定指令指针的调试信息
 struct eipdebuginfo {
-    const char *eip_file;                   // source code filename for eip
-    int eip_line;                           // source code line number for eip
-    const char *eip_fn_name;                // name of function containing eip
-    int eip_fn_namelen;                     // length of function's name
-    uintptr_t eip_fn_addr;                  // start address of function
-    int eip_fn_narg;                        // number of function arguments
+    const char *eip_file;   // eip 的源码文件名
+    int eip_line;           // eip的源码行号
+    const char *eip_fn_name;// 包含eip函数名
+    int eip_fn_namelen;     // 函数名长度
+    uintptr_t eip_fn_addr;  // 函数的起始地址
+    int eip_fn_narg;        // 函数参数的数量
 };
 
 /* *
@@ -75,22 +75,21 @@ stab_binsearch(const struct stab *stabs, int *region_left, int *region_right,
         while (m >= l && stabs[m].n_type != type) {
             m --;
         }
-        if (m < l) {    // no match in [l, m]
-            l = true_m + 1;
+        if (m < l) {    // 在[l, m]这部分并没有n_type为type的stabs
+            l = true_m + 1; //搜索[m+1, r]
             continue;
         }
 
-        // actual binary search
+        // 真实的二分查找
         any_matches = 1;
-        if (stabs[m].n_value < addr) {
+        if (stabs[m].n_value < addr) { //在右半部分
             *region_left = m;
             l = true_m + 1;
-        } else if (stabs[m].n_value > addr) {
+        } else if (stabs[m].n_value > addr) { //在左半部分
             *region_right = m - 1;
             r = m - 1;
         } else {
-            // exact match for 'addr', but continue loop to find
-            // *region_right
+            // addr已经匹配，继续查找，以找到*region_right
             *region_left = m;
             l = m;
             addr ++;
@@ -213,6 +212,7 @@ debuginfo_eip(uintptr_t addr, struct eipdebuginfo *info) {
  * print_kerninfo - print the information about kernel, including the location
  * of kernel entry, the start addresses of data and text segements, the start
  * address of free memory and how many memory that kernel has used.
+ * 打印内核信息，包括内核入口的地址，数据段文本端的起始地址，未分配的内存的其实地址, 以及内核已经使用了多少内存
  * */
 void
 print_kerninfo(void) {
@@ -226,6 +226,7 @@ print_kerninfo(void) {
 }
 
 /* *
+ * 打印调试信息 - 读取和显示统计信息
  * print_debuginfo - read and print the stat information for the address @eip,
  * and info.eip_fn_addr should be the first address of the related function.
  * */
@@ -250,11 +251,12 @@ print_debuginfo(uintptr_t eip) {
 static __noinline uint32_t
 read_eip(void) {
     uint32_t eip;
-    asm volatile("movl 4(%%ebp), %0" : "=r" (eip));
+    asm volatile("movl 4(%%ebp), %0" : "=r" (eip)); //返回地址
     return eip;
 }
 
 /* *
+ * print_stackframe
  * print_stackframe - print a list of the saved eip values from the nested 'call'
  * instructions that led to the current point of execution
  *
@@ -302,5 +304,20 @@ print_stackframe(void) {
       *           NOTICE: the calling funciton's return addr eip  = ss:[ebp+4]
       *                   the calling funciton's ebp = ss:[ebp]
       */
+    uint32_t ebp = read_ebp();
+    uint32_t eip = read_eip();
+
+    int i,j;
+    for(i=0; i< STACKFRAME_DEPTH; i++){
+        cprintf("ebp: 0x%08x  eip: 0x%08x args:", ebp, eip);
+        uint32_t *args = (uint32_t *)ebp + 2;
+        for(j = 0; j < 4; j ++ ){
+            cprintf("0x%08x ", args[i]);
+        }
+        cprintf("\n");
+        print_debuginfo(eip -1);
+        eip = ((uint32_t *)ebp)[1];
+        ebp = ((uint32_t *)ebp)[0];
+    }
 }
 
