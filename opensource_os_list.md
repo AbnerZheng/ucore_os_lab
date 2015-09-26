@@ -1,5 +1,6 @@
 # open source OSes
 
+JUST for TEST
 ## elastos (china)
  - site: http://elastos.org/
  - code: https://github.com/elastos/ElastosRDK5_0 
